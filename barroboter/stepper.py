@@ -6,24 +6,31 @@ class Stepper:
     A class to represent the stepper motor and its related operations.
     """
 
-    def __init__(self, pins, delay_between_steps, left_button_pin, right_button_pin):
+    def __init__(self, step_pin, direction_pin, enable_pin, delay_between_steps, left_button_pin, right_button_pin):
         """
         Initialize the stepper motor.
 
         Args:
-            pins (list): GPIO pins used for the stepper motor.
+            step_pin (int): GPIO pin used for the step signal.
+            direction_pin (int): GPIO pin used for the direction signal.
+            enable_pin (int): GPIO pin used for the enable signal.
             delay_between_steps (float): Delay between steps in seconds.
             left_button_pin (int): GPIO pin for the left button.
             right_button_pin (int): GPIO pin for the right button.
         """
-        self.pins = pins
+        self.step_pin = step_pin
+        self.direction_pin = direction_pin
+        self.enable_pin = enable_pin
         self.delay_between_steps = delay_between_steps
         self.left_button_pin = left_button_pin
         self.right_button_pin = right_button_pin
         self.current_pos = 0
 
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pins, GPIO.OUT)
+        GPIO.setup(self.step_pin, GPIO.OUT)
+        GPIO.setup(self.direction_pin, GPIO.OUT)
+        GPIO.setup(self.enable
+        GPIO.setup(self.enable_pin, GPIO.OUT)
         GPIO.setup(self.left_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
@@ -145,3 +152,43 @@ class Stepper:
         """
         self.current_pos = pos
         return f"Current position set to {self.current_pos}"
+
+    def go_right(self, steps):
+        """
+        Move the stepper motor to the right by a specified number of steps.
+
+        Args:
+            steps (int): The number of steps to move to the right.
+        """
+        GPIO.output(self.direction_pin, GPIO.HIGH)
+        for i in range(steps):
+            if GPIO.input(self.right_button_pin) == GPIO.LOW:
+                print("Right button pressed")
+                break
+            delay = self.delay_between_steps
+            GPIO.output(self.step_pin, GPIO.HIGH)
+            time.sleep(delay)
+            GPIO.output(self.step_pin, GPIO.LOW)
+            time.sleep(delay)
+            self.current_pos += 1
+            print(f"Moving right: current position = {self.current_pos}")
+
+    def go_left(self, steps):
+        """
+        Move the stepper motor to the left by a specified number of steps.
+
+        Args:
+            steps (int): The number of steps to move to the left.
+        """
+        GPIO.output(self.direction_pin, GPIO.LOW)
+        for i in range(steps):
+            if GPIO.input(self.left_button_pin) == GPIO.LOW:
+                print("Left button pressed")
+                break
+            delay = self.delay_between_steps
+            GPIO.output(self.step_pin, GPIO.HIGH)
+            time.sleep(delay)
+            GPIO.output(self.step_pin, GPIO.LOW)
+            time.sleep(delay)
+            self.current_pos -= 1
+            print(f"Moving left: current position = {self.current_pos}")
