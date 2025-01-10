@@ -1,4 +1,4 @@
-import sqlite3
+import json
 
 class Cocktail:
     def __init__(self):
@@ -6,31 +6,20 @@ class Cocktail:
 
     def get_all_cocktails(self):
         try:
-            conn = sqlite3.connect('barrobot.db')
-            cursor = conn.cursor()
-            cursor.execute('SELECT name FROM cocktails')
-            cocktails = [row[0] for row in cursor.fetchall()]
-            conn.close()
-            return cocktails
+            with open('data.json', 'r') as json_file:
+                data = json.load(json_file)
+            return [cocktail['name'] for cocktail in data['cocktails']]
         except Exception as e:
             print(f"Error retrieving cocktails: {e}")
             return []
 
     def select(self, cocktail):
         try:
-            conn = sqlite3.connect('barrobot.db')
-            cursor = conn.cursor()
-            cursor.execute('SELECT * FROM cocktails WHERE name = ?', (cocktail,))
-            cocktail_data = cursor.fetchone()
-            conn.close()
+            with open('data.json', 'r') as json_file:
+                data = json.load(json_file)
+            cocktail_data = next((c for c in data['cocktails'] if c['name'] == cocktail), None)
             if cocktail_data:
-                return {
-                    "name": cocktail_data[1],
-                    "ingredients": cocktail_data[2],
-                    "total_volumes": cocktail_data[3],
-                    "pour_times": cocktail_data[4],
-                    "image_url": cocktail_data[5]
-                }
+                return cocktail_data
             else:
                 return "Cocktail not found", 404
         except Exception as e:
