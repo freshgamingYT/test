@@ -1,51 +1,35 @@
 class Scale:
-    """
-    A class to represent the scale and its related operations.
-    """
-
     def __init__(self):
         self.enabled = True
 
     def init(self):
-        """
-        Initialize the scale.
-
-        Returns:
-            str: A message indicating the scale's initialization status.
-        """
-        if self.enabled:
-            return "Scale initialized"
-        else:
-            return "Scale is disabled"
+        try:
+            if self.enabled:
+                return "Scale initialized"
+            else:
+                return "Scale is disabled"
+        except Exception as e:
+            return f"Error initializing scale: {e}"
 
     def calibrate(self):
-        """
-        Calibrate the scale.
-
-        Returns:
-            str: A message indicating the scale's calibration status.
-        """
-        if self.enabled:
-            return "Scale calibrated"
-        else:
-            return "Scale is disabled"
+        try:
+            if self.enabled:
+                return "Scale calibrated"
+            else:
+                return "Scale is disabled"
+        except Exception as e:
+            return f"Error calibrating scale: {e}"
 
     def enable(self):
-        """
-        Enable the scale.
-
-        Returns:
-            str: A message indicating the scale's enable status.
-        """
-        self.enabled = True
-        return "Scale enabled"
+        try:
+            self.enabled = True
+            return "Scale enabled"
+        except Exception as e:
+            return f"Error enabling scale: {e}"
 
     def disable(self):
-        """
-        Disable the scale.
-
-        Returns:
-            str: A message indicating the scale's disable status.
-        """
-        self.enabled = False
-        return "Scale disabled"
+        try:
+            self.enabled = False
+            return "Scale disabled"
+        except Exception as e:
+            return f"Error disabling scale: {e}"

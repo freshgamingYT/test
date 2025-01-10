@@ -20,8 +20,12 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 logger = logging.getLogger()
 
 # Load configuration from JSON file
-with open('config.json') as config_file:
-    config = json.load(config_file)
+try:
+    with open('config.json') as config_file:
+        config = json.load(config_file)
+except Exception as e:
+    logger.error(f"Error loading configuration: {e}")
+    raise
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Control the components of the bar robot.')
@@ -30,17 +34,21 @@ parser.add_argument('--disable-scale', action='store_true', help='Disable the sc
 args = parser.parse_args()
 
 # Initialize components
-stepper = Stepper(
-    step_pin=config['step_pin'],
-    direction_pin=config['direction_pin'],
-    enable_pin=config['enable_pin'],
-    delay_between_steps=config['us_delay'] * config['uS'],
-    left_button_pin=config['left_button_pin'],
-    right_button_pin=config['right_button_pin']
-)
-servo = Servo()
-scale = Scale()
-cocktail = Cocktail()
+try:
+    stepper = Stepper(
+        step_pin=config['step_pin'],
+        direction_pin=config['direction_pin'],
+        enable_pin=config['enable_pin'],
+        delay_between_steps=config['us_delay'] * config['uS'],
+        left_button_pin=config['left_button_pin'],
+        right_button_pin=config['right_button_pin']
+    )
+    servo = Servo()
+    scale = Scale()
+    cocktail = Cocktail()
+except Exception as e:
+    logger.error(f"Error initializing components: {e}")
+    raise
 
 # Set initial states based on command-line arguments
 if args.disable_servo:
@@ -84,12 +92,16 @@ def bierinfo():
     """
     Display the ingredients of the selected cocktail.
     """
-    cocktail_name = request.args.get('cocktail_name')
-    cocktail_data = cocktail.select(cocktail_name)
-    if isinstance(cocktail_data, dict):
-        return render_template('c1.html', cocktail=cocktail_data)
-    else:
-        return "Cocktail not found", 404
+    try:
+        cocktail_name = request.args.get('cocktail_name')
+        cocktail_data = cocktail.select(cocktail_name)
+        if isinstance(cocktail_data, dict):
+            return render_template('c1.html', cocktail=cocktail_data)
+        else:
+            return "Cocktail not found", 404
+    except Exception as e:
+        logger.error(f"Error displaying cocktail info: {e}")
+        return "Internal Server Error", 500
 
 # Servo routes
 @app.route('/servo/init', methods=['GET'])
@@ -97,24 +109,36 @@ def init_servo():
     """
     Initialize the servo motor.
     """
-    logger.info('Initializing servo motor')
-    return servo.init()
+    try:
+        logger.info('Initializing servo motor')
+        return servo.init()
+    except Exception as e:
+        logger.error(f"Error initializing servo motor: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/servo/enable', methods=['POST'])
 def enable_servo():
     """
     Enable the servo motor.
     """
-    logger.info('Enabling servo motor')
-    return servo.enable()
+    try:
+        logger.info('Enabling servo motor')
+        return servo.enable()
+    except Exception as e:
+        logger.error(f"Error enabling servo motor: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/servo/disable', methods=['POST'])
 def disable_servo():
     """
     Disable the servo motor.
     """
-    logger.info('Disabling servo motor')
-    return servo.disable()
+    try:
+        logger.info('Disabling servo motor')
+        return servo.disable()
+    except Exception as e:
+        logger.error(f"Error disabling servo motor: {e}")
+        return "Internal Server Error", 500
 
 # Scale routes
 @app.route('/scale/init', methods=['GET'])
@@ -122,32 +146,48 @@ def init_scale():
     """
     Initialize the scale.
     """
-    logger.info('Initializing scale')
-    return scale.init()
+    try:
+        logger.info('Initializing scale')
+        return scale.init()
+    except Exception as e:
+        logger.error(f"Error initializing scale: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/scale/calibrate_scale', methods=['POST'])
 def calibrate_scale():
     """
     Calibrate the scale.
     """
-    logger.info('Calibrating scale')
-    return scale.calibrate()
+    try:
+        logger.info('Calibrating scale')
+        return scale.calibrate()
+    except Exception as e:
+        logger.error(f"Error calibrating scale: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/scale/enable', methods=['POST'])
 def enable_scale():
     """
     Enable the scale.
     """
-    logger.info('Enabling scale')
-    return scale.enable()
+    try:
+        logger.info('Enabling scale')
+        return scale.enable()
+    except Exception as e:
+        logger.error(f"Error enabling scale: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/scale/disable', methods=['POST'])
 def disable_scale():
     """
     Disable the scale.
     """
-    logger.info('Disabling scale')
-    return scale.disable()
+    try:
+        logger.info('Disabling scale')
+        return scale.disable()
+    except Exception as e:
+        logger.error(f"Error disabling scale: {e}")
+        return "Internal Server Error", 500
 
 # Cocktail routes
 @app.route('/cocktail/select_cocktail', methods=['POST'])
@@ -155,36 +195,48 @@ def select_cocktail():
     """
     Select a cocktail and redirect to its details page.
     """
-    cocktail_name = request.json.get('cocktail')
-    cocktail_data = cocktail.select(cocktail_name)
-    if isinstance(cocktail_data, dict):
-        logger.info(f'Selected cocktail {cocktail_name}')
-        return redirect(url_for('show_cocktail', cocktail_name=cocktail_name))
-    else:
-        logger.warning(f'Cocktail {cocktail_name} not found')
-        return cocktail_data
+    try:
+        cocktail_name = request.json.get('cocktail')
+        cocktail_data = cocktail.select(cocktail_name)
+        if isinstance(cocktail_data, dict):
+            logger.info(f'Selected cocktail {cocktail_name}')
+            return redirect(url_for('show_cocktail', cocktail_name=cocktail_name))
+        else:
+            logger.warning(f'Cocktail {cocktail_name} not found')
+            return cocktail_data
+    except Exception as e:
+        logger.error(f"Error selecting cocktail: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/cocktail/show/<cocktail_name>', methods=['GET'])
 def show_cocktail(cocktail_name):
     """
     Show the details of a selected cocktail.
     """
-    cocktail_data = cocktail.select(cocktail_name)
-    if isinstance(cocktail_data, dict):
-        logger.info(f'Showing details for cocktail {cocktail_name}')
-        return render_template('cocktail.html', cocktail=cocktail_data)
-    else:
-        logger.warning(f'Cocktail {cocktail_name} not found')
-        return "Cocktail not found", 404
+    try:
+        cocktail_data = cocktail.select(cocktail_name)
+        if isinstance(cocktail_data, dict):
+            logger.info(f'Showing details for cocktail {cocktail_name}')
+            return render_template('cocktail.html', cocktail=cocktail_data)
+        else:
+            logger.warning(f'Cocktail {cocktail_name} not found')
+            return "Cocktail not found", 404
+    except Exception as e:
+        logger.error(f"Error showing cocktail details: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/cocktail/start_mixing', methods=['POST'])
 def start_mixing():
     """
     Start the mixing process for the selected cocktail.
     """
-    logger.info('Starting mixing process')
-    # Implement the logic to start the mixing process
-    return "Mixing started"
+    try:
+        logger.info('Starting mixing process')
+        # Implement the logic to start the mixing process
+        return "Mixing started"
+    except Exception as e:
+        logger.error(f"Error starting mixing process: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/cocktail/upload_csv', methods=['GET', 'POST'])
 def upload_csv():
@@ -192,28 +244,32 @@ def upload_csv():
     Upload a CSV file containing cocktail recipes.
     """
     if request.method == 'POST':
-        file = request.files['file']
-        if file and file.filename.endswith('.csv'):
-            filename = secure_filename(file.filename)
-            filepath = f"{app.config['UPLOAD_FOLDER']}/{filename}"
-            file.save(filepath)
-            with open(filepath, newline='') as csvfile:
-                reader = csv.reader(csvfile)
-                conn = sqlite3.connect('barrobot.db')
-                cursor = conn.cursor()
-                for row in reader:
-                    name = row[0]
-                    ingredients = [row[1], row[3], row[5]]
-                    pour_times = [row[2], row[4], row[6]]
-                    image_url = row[7]
-                    cursor.execute('''
-                    INSERT INTO cocktails (name, ingredients, total_volumes, pour_times, image_url)
-                    VALUES (?, ?, ?, ?, ?)
-                    ''', (name, ', '.join(ingredients), ', '.join(pour_times), image_url))
-                conn.commit()
-                conn.close()
-            logger.info('Cocktails uploaded successfully')
-            return "Cocktails uploaded successfully"
+        try:
+            file = request.files['file']
+            if file and file.filename.endswith('.csv'):
+                filename = secure_filename(file.filename)
+                filepath = f"{app.config['UPLOAD_FOLDER']}/{filename}"
+                file.save(filepath)
+                with open(filepath, newline='') as csvfile:
+                    reader = csv.reader(csvfile)
+                    conn = sqlite3.connect('barrobot.db')
+                    cursor = conn.cursor()
+                    for row in reader:
+                        name = row[0]
+                        ingredients = [row[1], row[3], row[5]]
+                        pour_times = [row[2], row[4], row[6]]
+                        image_url = row[7]
+                        cursor.execute('''
+                        INSERT INTO cocktails (name, ingredients, total_volumes, pour_times, image_url)
+                        VALUES (?, ?, ?, ?, ?)
+                        ''', (name, ', '.join(ingredients), ', '.join(pour_times), image_url))
+                    conn.commit()
+                    conn.close()
+                logger.info('Cocktails uploaded successfully')
+                return "Cocktails uploaded successfully"
+        except Exception as e:
+            logger.error(f"Error uploading CSV: {e}")
+            return "Internal Server Error", 500
     return render_template('upload_csv.html')
 
 # Positions routes
@@ -222,32 +278,40 @@ def view_positions():
     """
     View the positions stored in the database.
     """
-    conn = sqlite3.connect('barrobot.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM positions')
-    positions = cursor.fetchall()
-    conn.close()
-    logger.info('Viewing positions')
-    return render_template('positions.html', positions=positions)
+    try:
+        conn = sqlite3.connect('barrobot.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM positions')
+        positions = cursor.fetchall()
+        conn.close()
+        logger.info('Viewing positions')
+        return render_template('positions.html', positions=positions)
+    except Exception as e:
+        logger.error(f"Error viewing positions: {e}")
+        return "Internal Server Error", 500
 
 @app.route('/positions/move_to', methods=['POST'])
 def move_to_position():
     """
     Move the stepper motor to a specified position.
     """
-    position_id = request.json.get('position_id')
-    conn = sqlite3.connect('barrobot.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT position FROM positions WHERE id = ?', (position_id,))
-    position = cursor.fetchone()
-    conn.close()
-    if position:
-        logger.info(f'Moving to position {position_id}')
-        stepper.set_current_pos(position[0])
-        return f"Moved to position {position[0]}"
-    else:
-        logger.warning(f'Position {position_id} not found')
-        return "Position not found", 404
+    try:
+        position_id = request.json.get('position_id')
+        conn = sqlite3.connect('barrobot.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT position FROM positions WHERE id = ?', (position_id,))
+        position = cursor.fetchone()
+        conn.close()
+        if position:
+            logger.info(f'Moving to position {position_id}')
+            stepper.set_current_pos(position[0])
+            return f"Moved to position {position[0]}"
+        else:
+            logger.warning(f'Position {position_id} not found')
+            return "Position not found", 404
+    except Exception as e:
+        logger.error(f"Error moving to position: {e}")
+        return "Internal Server Error", 500
 
 if __name__ == '__main__':
     try:
