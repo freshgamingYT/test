@@ -18,6 +18,7 @@ class Stepper:
             left_button_pin (int): GPIO pin for the left button.
             right_button_pin (int): GPIO pin for the right button.
         """
+        GPIO.setwarnings(False)
         self.step_pin = step_pin
         self.direction_pin = direction_pin
         self.enable_pin = enable_pin
@@ -29,11 +30,10 @@ class Stepper:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.step_pin, GPIO.OUT)
         GPIO.setup(self.direction_pin, GPIO.OUT)
-        GPIO.setup(self.enable)
+        GPIO.setup(self.enable_pin, GPIO.OUT)
         GPIO.setup(self.enable_pin, GPIO.OUT)
         GPIO.setup(self.left_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setwarnings(False)
 
     def init(self):
         """
