@@ -33,6 +33,7 @@ class Stepper:
         GPIO.setup(self.enable_pin, GPIO.OUT)
         GPIO.setup(self.left_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setwarnings(False)
 
     def init(self):
         """
