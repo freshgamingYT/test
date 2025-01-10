@@ -31,10 +31,12 @@ args = parser.parse_args()
 
 # Initialize components
 stepper = Stepper(
-    pins=[config['step_pin'], config['direction_pin'], config['enable_pin']],
+    step_pin=config['step_pin'],
+    direction_pin=config['direction_pin'],
+    enable_pin=config['enable_pin'],
     delay_between_steps=config['us_delay'] * config['uS'],
-    left_button_pin=config['servo_steps']['pos1'],
-    right_button_pin=config['servo_steps']['pos10']
+    left_button_pin=config['left_button_pin'],
+    right_button_pin=config['right_button_pin']
 )
 servo = Servo()
 scale = Scale()
@@ -249,7 +251,7 @@ def move_to_position():
 
 if __name__ == '__main__':
     try:
-        app.run(host='127.0.0.1', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5000, debug=True)
     finally:
         # Backup the database before shutting down
         backup_db()
