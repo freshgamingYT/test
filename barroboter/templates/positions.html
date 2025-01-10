@@ -21,11 +21,11 @@
         <tbody>
             {% for position in positions %}
             <tr>
-                <td>{{ position[0] }}</td>
-                <td>{{ position[1] }}</td>
-                <td>{{ position[2] }}</td>
-                <td>{{ position[3] }}</td>
-                <td>{{ position[4] }}</td>
+                <td>{{ position.id }}</td>
+                <td>{{ position.name }}</td>
+                <td>{{ position.position }}</td>
+                <td>{{ position.liquid }}</td>
+                <td>{{ position.steps }}</td>
             </tr>
             {% endfor %}
         </tbody>
