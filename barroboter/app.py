@@ -249,4 +249,7 @@ def move_to_position():
 
 if __name__ == '__main__':
     try:
-        app.run(host='
+        app.run(host='127.0.0.1', port=5000, debug=True)
+    finally:
+        # Backup the database before shutting down
+        backup_db()
