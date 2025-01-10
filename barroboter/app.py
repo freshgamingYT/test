@@ -46,46 +46,89 @@ if args.disable_servo:
 if args.disable_scale:
     scale.disable()
 
+@app.route('/')
+def index():
+    """
+    Render the main page of the application.
+    """
+    return render_template('index.html')
+
+@app.route('/bierinfo')
+def bierinfo():
+    """
+    Display the ingredients of the selected cocktail.
+    """
+    cocktail_name = request.args.get('cocktail_name')
+    cocktail_data = cocktail.select(cocktail_name)
+    if isinstance(cocktail_data, dict):
+        return render_template('c1.html', cocktail=cocktail_data)
+    else:
+        return "Cocktail not found", 404
+
 # Servo routes
 @app.route('/servo/init', methods=['GET'])
 def init_servo():
+    """
+    Initialize the servo motor.
+    """
     logger.info('Initializing servo motor')
     return servo.init()
 
 @app.route('/servo/enable', methods=['POST'])
 def enable_servo():
+    """
+    Enable the servo motor.
+    """
     logger.info('Enabling servo motor')
     return servo.enable()
 
 @app.route('/servo/disable', methods=['POST'])
 def disable_servo():
+    """
+    Disable the servo motor.
+    """
     logger.info('Disabling servo motor')
     return servo.disable()
 
 # Scale routes
 @app.route('/scale/init', methods=['GET'])
 def init_scale():
+    """
+    Initialize the scale.
+    """
     logger.info('Initializing scale')
     return scale.init()
 
 @app.route('/scale/calibrate_scale', methods=['POST'])
 def calibrate_scale():
+    """
+    Calibrate the scale.
+    """
     logger.info('Calibrating scale')
     return scale.calibrate()
 
 @app.route('/scale/enable', methods=['POST'])
 def enable_scale():
+    """
+    Enable the scale.
+    """
     logger.info('Enabling scale')
     return scale.enable()
 
 @app.route('/scale/disable', methods=['POST'])
 def disable_scale():
+    """
+    Disable the scale.
+    """
     logger.info('Disabling scale')
     return scale.disable()
 
 # Cocktail routes
-@app.route('/Cocktail/select_cocktail', methods=['POST'])
+@app.route('/cocktail/select_cocktail', methods=['POST'])
 def select_cocktail():
+    """
+    Select a cocktail and redirect to its details page.
+    """
     cocktail_name = request.json.get('cocktail')
     cocktail_data = cocktail.select(cocktail_name)
     if isinstance(cocktail_data, dict):
@@ -95,8 +138,11 @@ def select_cocktail():
         logger.warning(f'Cocktail {cocktail_name} not found')
         return cocktail_data
 
-@app.route('/Cocktail/show/<cocktail_name>', methods=['GET'])
+@app.route('/cocktail/show/<cocktail_name>', methods=['GET'])
 def show_cocktail(cocktail_name):
+    """
+    Show the details of a selected cocktail.
+    """
     cocktail_data = cocktail.select(cocktail_name)
     if isinstance(cocktail_data, dict):
         logger.info(f'Showing details for cocktail {cocktail_name}')
@@ -105,14 +151,20 @@ def show_cocktail(cocktail_name):
         logger.warning(f'Cocktail {cocktail_name} not found')
         return "Cocktail not found", 404
 
-@app.route('/Cocktail/start_mixing', methods=['POST'])
+@app.route('/cocktail/start_mixing', methods=['POST'])
 def start_mixing():
+    """
+    Start the mixing process for the selected cocktail.
+    """
     logger.info('Starting mixing process')
     # Implement the logic to start the mixing process
     return "Mixing started"
 
-@app.route('/Cocktail/upload_csv', methods=['GET', 'POST'])
+@app.route('/cocktail/upload_csv', methods=['GET', 'POST'])
 def upload_csv():
+    """
+    Upload a CSV file containing cocktail recipes.
+    """
     if request.method == 'POST':
         file = request.files['file']
         if file and file.filename.endswith('.csv'):
@@ -148,6 +200,9 @@ def upload_csv():
 # Positions routes
 @app.route('/positions', methods=['GET'])
 def view_positions():
+    """
+    View the positions stored in the database.
+    """
     conn = sqlite3.connect('barrobot.db')
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM positions')
@@ -158,6 +213,9 @@ def view_positions():
 
 @app.route('/positions/move_to', methods=['POST'])
 def move_to_position():
+    """
+    Move the stepper motor to a specified position.
+    """
     position_id = request.json.get('position_id')
     conn = sqlite3.connect('barrobot.db')
     cursor = conn.cursor()

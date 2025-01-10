@@ -1,6 +1,9 @@
 import sqlite3
 
 def init_db():
+    """
+    Initialize the database with the necessary tables.
+    """
     conn = sqlite3.connect('barrobot.db')
     cursor = conn.cursor()
 
