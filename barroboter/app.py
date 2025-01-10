@@ -1,15 +1,13 @@
 import argparse
-import csv
 import json
 import logging
-import sqlite3
 import shutil
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-from werkzeug.utils import secure_filename
+from flask import Flask
 from stepper import Stepper
 from servo import Servo
 from scale import Scale
 from cocktail import Cocktail
+from routes import init_routes
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -57,265 +55,35 @@ if args.disable_servo:
 if args.disable_scale:
     scale.disable()
 
-def backup_db():
+def backup_data():
     """
-    Back up the database to a file.
-    """
-    try:
-        shutil.copy('barrobot.db', 'barrobot_backup.db')
-        logger.info("Database backup successful.")
-    except Exception as e:
-        logger.error(f"Error backing up database: {e}")
-
-def restore_db():
-    """
-    Restore the database from a backup file.
+    Back up the data to a file.
     """
     try:
-        shutil.copy('barrobot_backup.db', 'barrobot.db')
-        logger.info("Database restore successful.")
+        shutil.copy('data.json', 'data_backup.json')
+        logger.info("Data backup successful.")
     except Exception as e:
-        logger.error(f"Error restoring database: {e}")
+        logger.error(f"Error backing up data: {e}")
 
-# Restore the database when initializing
-restore_db()
-
-@app.route('/')
-def index():
+def restore_data():
     """
-    Render the main page of the application.
-    """
-    return render_template('index.html')
-
-@app.route('/bierinfo')
-def bierinfo():
-    """
-    Display the ingredients of the selected cocktail.
+    Restore the data from a backup file.
     """
     try:
-        cocktail_name = request.args.get('cocktail_name')
-        cocktail_data = cocktail.select(cocktail_name)
-        if isinstance(cocktail_data, dict):
-            return render_template('c1.html', cocktail=cocktail_data)
-        else:
-            return "Cocktail not found", 404
+        shutil.copy('data_backup.json', 'data.json')
+        logger.info("Data restore successful.")
     except Exception as e:
-        logger.error(f"Error displaying cocktail info: {e}")
-        return "Internal Server Error", 500
+        logger.error(f"Error restoring data: {e}")
 
-# Servo routes
-@app.route('/servo/init', methods=['GET'])
-def init_servo():
-    """
-    Initialize the servo motor.
-    """
-    try:
-        logger.info('Initializing servo motor')
-        return servo.init()
-    except Exception as e:
-        logger.error(f"Error initializing servo motor: {e}")
-        return "Internal Server Error", 500
+# Restore the data when initializing
+restore_data()
 
-@app.route('/servo/enable', methods=['POST'])
-def enable_servo():
-    """
-    Enable the servo motor.
-    """
-    try:
-        logger.info('Enabling servo motor')
-        return servo.enable()
-    except Exception as e:
-        logger.error(f"Error enabling servo motor: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/servo/disable', methods=['POST'])
-def disable_servo():
-    """
-    Disable the servo motor.
-    """
-    try:
-        logger.info('Disabling servo motor')
-        return servo.disable()
-    except Exception as e:
-        logger.error(f"Error disabling servo motor: {e}")
-        return "Internal Server Error", 500
-
-# Scale routes
-@app.route('/scale/init', methods=['GET'])
-def init_scale():
-    """
-    Initialize the scale.
-    """
-    try:
-        logger.info('Initializing scale')
-        return scale.init()
-    except Exception as e:
-        logger.error(f"Error initializing scale: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/scale/calibrate_scale', methods=['POST'])
-def calibrate_scale():
-    """
-    Calibrate the scale.
-    """
-    try:
-        logger.info('Calibrating scale')
-        return scale.calibrate()
-    except Exception as e:
-        logger.error(f"Error calibrating scale: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/scale/enable', methods=['POST'])
-def enable_scale():
-    """
-    Enable the scale.
-    """
-    try:
-        logger.info('Enabling scale')
-        return scale.enable()
-    except Exception as e:
-        logger.error(f"Error enabling scale: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/scale/disable', methods=['POST'])
-def disable_scale():
-    """
-    Disable the scale.
-    """
-    try:
-        logger.info('Disabling scale')
-        return scale.disable()
-    except Exception as e:
-        logger.error(f"Error disabling scale: {e}")
-        return "Internal Server Error", 500
-
-# Cocktail routes
-@app.route('/cocktail/select_cocktail', methods=['POST'])
-def select_cocktail():
-    """
-    Select a cocktail and redirect to its details page.
-    """
-    try:
-        cocktail_name = request.json.get('cocktail')
-        cocktail_data = cocktail.select(cocktail_name)
-        if isinstance(cocktail_data, dict):
-            logger.info(f'Selected cocktail {cocktail_name}')
-            return redirect(url_for('show_cocktail', cocktail_name=cocktail_name))
-        else:
-            logger.warning(f'Cocktail {cocktail_name} not found')
-            return cocktail_data
-    except Exception as e:
-        logger.error(f"Error selecting cocktail: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/cocktail/show/<cocktail_name>', methods=['GET'])
-def show_cocktail(cocktail_name):
-    """
-    Show the details of a selected cocktail.
-    """
-    try:
-        cocktail_data = cocktail.select(cocktail_name)
-        if isinstance(cocktail_data, dict):
-            logger.info(f'Showing details for cocktail {cocktail_name}')
-            return render_template('cocktail.html', cocktail=cocktail_data)
-        else:
-            logger.warning(f'Cocktail {cocktail_name} not found')
-            return "Cocktail not found", 404
-    except Exception as e:
-        logger.error(f"Error showing cocktail details: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/cocktail/start_mixing', methods=['POST'])
-def start_mixing():
-    """
-    Start the mixing process for the selected cocktail.
-    """
-    try:
-        logger.info('Starting mixing process')
-        # Implement the logic to start the mixing process
-        return "Mixing started"
-    except Exception as e:
-        logger.error(f"Error starting mixing process: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/cocktail/upload_csv', methods=['GET', 'POST'])
-def upload_csv():
-    """
-    Upload a CSV file containing cocktail recipes.
-    """
-    if request.method == 'POST':
-        try:
-            file = request.files['file']
-            if file and file.filename.endswith('.csv'):
-                filename = secure_filename(file.filename)
-                filepath = f"{app.config['UPLOAD_FOLDER']}/{filename}"
-                file.save(filepath)
-                with open(filepath, newline='') as csvfile:
-                    reader = csv.reader(csvfile)
-                    conn = sqlite3.connect('barrobot.db')
-                    cursor = conn.cursor()
-                    for row in reader:
-                        name = row[0]
-                        ingredients = [row[1], row[3], row[5]]
-                        pour_times = [row[2], row[4], row[6]]
-                        image_url = row[7]
-                        cursor.execute('''
-                        INSERT INTO cocktails (name, ingredients, total_volumes, pour_times, image_url)
-                        VALUES (?, ?, ?, ?, ?)
-                        ''', (name, ', '.join(ingredients), ', '.join(pour_times), image_url))
-                    conn.commit()
-                    conn.close()
-                logger.info('Cocktails uploaded successfully')
-                return "Cocktails uploaded successfully"
-        except Exception as e:
-            logger.error(f"Error uploading CSV: {e}")
-            return "Internal Server Error", 500
-    return render_template('upload_csv.html')
-
-# Positions routes
-@app.route('/positions', methods=['GET'])
-def view_positions():
-    """
-    View the positions stored in the database.
-    """
-    try:
-        conn = sqlite3.connect('barrobot.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM positions')
-        positions = cursor.fetchall()
-        conn.close()
-        logger.info('Viewing positions')
-        return render_template('positions.html', positions=positions)
-    except Exception as e:
-        logger.error(f"Error viewing positions: {e}")
-        return "Internal Server Error", 500
-
-@app.route('/positions/move_to', methods=['POST'])
-def move_to_position():
-    """
-    Move the stepper motor to a specified position.
-    """
-    try:
-        position_id = request.json.get('position_id')
-        conn = sqlite3.connect('barrobot.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT position FROM positions WHERE id = ?', (position_id,))
-        position = cursor.fetchone()
-        conn.close()
-        if position:
-            logger.info(f'Moving to position {position_id}')
-            stepper.set_current_pos(position[0])
-            return f"Moved to position {position[0]}"
-        else:
-            logger.warning(f'Position {position_id} not found')
-            return "Position not found", 404
-    except Exception as e:
-        logger.error(f"Error moving to position: {e}")
-        return "Internal Server Error", 500
+# Initialize routes
+init_routes(app, stepper, servo, scale, cocktail)
 
 if __name__ == '__main__':
     try:
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='127.0.0.1', port=5000, debug=True)
     finally:
-        # Backup the database before shutting down
-        backup_db()
+        # Backup the data before shutting down
+        backup_data()
