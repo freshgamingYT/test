@@ -29,7 +29,7 @@ class Stepper:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.step_pin, GPIO.OUT)
         GPIO.setup(self.direction_pin, GPIO.OUT)
-        GPIO.setup(self.enable
+        GPIO.setup(self.enable)
         GPIO.setup(self.enable_pin, GPIO.OUT)
         GPIO.setup(self.left_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.right_button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
