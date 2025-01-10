@@ -6,7 +6,24 @@ class Cocktail:
     """
 
     def __init__(self):
-        self.cocktails = ["Mojito", "Martini", "Margarita"]
+        """
+        Initialize the Cocktail class.
+        """
+        self.cocktails = self.get_all_cocktails()
+
+    def get_all_cocktails(self):
+        """
+        Retrieve all cocktail names from the database.
+
+        Returns:
+            list: A list of all cocktail names.
+        """
+        conn = sqlite3.connect('barrobot.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT name FROM cocktails')
+        cocktails = [row[0] for row in cursor.fetchall()]
+        conn.close()
+        return cocktails
 
     def select(self, cocktail):
         """
