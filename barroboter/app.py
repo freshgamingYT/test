@@ -3,6 +3,7 @@ import csv
 import json
 import logging
 import sqlite3
+import shutil
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
 from stepper import Stepper
@@ -30,10 +31,10 @@ args = parser.parse_args()
 
 # Initialize components
 stepper = Stepper(
-    pins=config['stepper']['pins'],
-    delay_between_steps=config['stepper']['delay_between_steps'],
-    left_button_pin=config['stepper']['left_button_pin'],
-    right_button_pin=config['stepper']['right_button_pin']
+    pins=[config['step_pin'], config['direction_pin'], config['enable_pin']],
+    delay_between_steps=config['us_delay'] * config['uS'],
+    left_button_pin=config['servo_steps']['pos1'],
+    right_button_pin=config['servo_steps']['pos10']
 )
 servo = Servo()
 scale = Scale()
@@ -45,6 +46,29 @@ if args.disable_servo:
 
 if args.disable_scale:
     scale.disable()
+
+def backup_db():
+    """
+    Back up the database to a file.
+    """
+    try:
+        shutil.copy('barrobot.db', 'barrobot_backup.db')
+        logger.info("Database backup successful.")
+    except Exception as e:
+        logger.error(f"Error backing up database: {e}")
+
+def restore_db():
+    """
+    Restore the database from a backup file.
+    """
+    try:
+        shutil.copy('barrobot_backup.db', 'barrobot.db')
+        logger.info("Database restore successful.")
+    except Exception as e:
+        logger.error(f"Error restoring database: {e}")
+
+# Restore the database when initializing
+restore_db()
 
 @app.route('/')
 def index():
@@ -176,21 +200,14 @@ def upload_csv():
                 conn = sqlite3.connect('barrobot.db')
                 cursor = conn.cursor()
                 for row in reader:
-                    name = row[0].split(':')[0].strip()
-                    ingredients = []
-                    total_volumes = []
-                    pour_times = []
-                    for i in range(1, len(row)):
-                        if i % 3 == 1:
-                            ingredients.append(row[i].strip())
-                        elif i % 3 == 2:
-                            total_volumes.append(row[i].strip())
-                        elif i % 3 == 0:
-                            pour_times.append(row[i].strip())
+                    name = row[0]
+                    ingredients = [row[1], row[3], row[5]]
+                    pour_times = [row[2], row[4], row[6]]
+                    image_url = row[7]
                     cursor.execute('''
                     INSERT INTO cocktails (name, ingredients, total_volumes, pour_times, image_url)
                     VALUES (?, ?, ?, ?, ?)
-                    ''', (name, ', '.join(ingredients), ', '.join(total_volumes), ', '.join(pour_times), row[-1].strip()))
+                    ''', (name, ', '.join(ingredients), ', '.join(pour_times), image_url))
                 conn.commit()
                 conn.close()
             logger.info('Cocktails uploaded successfully')
@@ -231,4 +248,5 @@ def move_to_position():
         return "Position not found", 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    try:
+        app.run(host='
