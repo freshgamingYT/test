@@ -23,3 +23,4 @@ class PositionManager:
         num_columns = math.ceil(len(positions_list) / num_rows)
         self.positions_2d_array = [positions_list[i:i + num_columns] for i in range(0, len(positions_list), num_columns)]
         logger.debug(f'2D array: {self.positions_2d_array}')
+        print("successfully loaded positions")
