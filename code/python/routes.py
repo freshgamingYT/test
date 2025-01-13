@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, send_from_directory
-from stepper.positions import PositionManager
+from stepper.movement import Movement  # Import the Movement class
 import logging
 import os
 
@@ -8,7 +8,11 @@ logger = logging.getLogger('my_logger')
 cocktail_route = Blueprint('cocktail_route', __name__)
 main_route = Blueprint('main_route', __name__)
 
-position_manager = PositionManager('../files/positions.json')
+movement = Movement(
+    positions_file='../files/positions.json',
+    sequence_file='../files/sequence.json',
+    config_file='../files/config.json'
+)  # Initialize the Movement class
 
 @cocktail_route.route('/1', methods=['GET'])
 def cocktail():
@@ -20,7 +24,8 @@ def start():
     data = request.get_json()
     logger.debug(f'Received start button press: {data}')
     if data['button'] == 'start':
-        position_manager.load_positions()
+        # Execute the sequence of movements
+        movement.execute_sequence()
         return jsonify({'status': 'success'})
     return jsonify({'status': 'failed'})
 
