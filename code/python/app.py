@@ -1,27 +1,35 @@
 from flask import Flask
 from flask_socketio import SocketIO
-import RPi.GPIO as GPIO 
-
-from python.logger.logger import setup_logger
-
+import RPi.GPIO as GPIO
 import threading
 import signal
 import sys
+import json
+import os
 
-class app:
+from logger.logger import setup_logger
+from routes import register_routes
+
+class App:
     def __init__(self, config_file: str):
         self.config_file = config_file
         self.logger = setup_logger()
         
         self.app = Flask(__name__)
-        self.app.config["SECRET_KEY"] = "Keins123!"
+        self.load_config()
         self.socketio = SocketIO(self.app)
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
         self.stop_event = threading.Event()
 
+    def load_config(self):
+        with open(self.config_file) as f:
+            config = json.load(f)
+            self.app.config.update(config)
+
     def create_app(self):
+        register_routes(self.app)
         return self.app
     
     def cleanup(self):
@@ -34,11 +42,11 @@ class app:
 
 
 if __name__ == '__main__':
-    config_file = ".../files/config"
-    config = app(config_file=config_file)
-    test = config.create_app()
+    config_file = os.path.join(os.path.dirname(__file__), '../config/config.json')
+    config = App(config_file=config_file)
+    app_instance = config.create_app()
 
     try:
-        config.socketio.run(app=app, debug=True)
+        config.socketio.run(app=app_instance, debug=True)
     finally:
         config.cleanup()
