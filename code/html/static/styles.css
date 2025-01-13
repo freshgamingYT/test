@@ -139,9 +139,3 @@ body {
     align-items: center;
     justify-content: center;
 }
-
-.mixbutton:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 40px  #005380;
-    text-shadow: 0 0 10px  #005380;
-}
