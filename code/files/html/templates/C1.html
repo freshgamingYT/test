@@ -1,0 +1,45 @@
+<header class="headerbox">
+    <a href="index.html"><img src="sva-logo-2024.png" class="svalogo"></a>
+    <center>
+        <a href="index.html" class="robotname">Virgin Colada</a>
+    </center>
+</header>
+
+<body>
+    <img src="c1.png" class="c_pic" href="info_c1.html">
+    <div style="padding-top: 100px">
+        <h1 class="zutat">Coconut Cream - 4cl</h1>
+    </div>
+    <div style="padding-top: 15px">
+        <h1 class="zutat">Orangensaft - 6cl</h1>
+    </div>
+    <div style="padding-top: 15px">
+        <h1 class="zutat">Ananassaft - 8cl</h1>
+    </div>
+    <div style="padding-top: 15px">
+        <h1 class="zutat">Eiswürfel</h1>
+    </div>
+    <div style="padding-top: 15px">
+        <h1 class="zutat">Wasser - 100ml</h1>
+    </div>
+
+    <button id="startButton" onclick="startButtonPressed()">Start</button>
+
+    <script>
+        function startButtonPressed() {
+            fetch('/cocktail/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ button: 'start' })
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Button pressed');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
