@@ -2,5 +2,9 @@
     "SECRET_KEY": "Keins123!",
     "LOG_DIR": "../python/logger/logs",
     "POSITIONS_FILE": "../files/positions.json",
-    "BUTTONS_FILE": "../files/buttons.json"
+    "BUTTONS_FILE": "../files/buttons.json",
+    "GPIO_PINS": {
+        "stepper_pin": 18,
+        "other_pin": 23
+    }
 }
