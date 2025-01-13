@@ -34,27 +34,27 @@
         <h1 class="zutat">Wasser - 100ml</h1>
     </div>
 
-    <button id="startButton" onclick="startButtonPressed()">Start</button>
+    <button class="mixbutton" onclick="startButtonPressed()">Jetzt Zubereiten!</button>
 
     <script>
-    function startButtonPressed() {
-        fetch('/cocktail/start', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ button: 'start' })
-        }).then(response => {
-            if (response.ok) {
-                console.log('Button pressed');
-            } else {
-                console.error('Failed to press button');
-            }
-        }).catch(error => {
-            console.error('Error:', error);
-        });
-    }
-</script>
+        function startButtonPressed() {
+            fetch('/cocktail/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ button: 'start' })
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Button pressed');
+                } else {
+                    console.error('Failed to press button');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
 </body>
 
 </html>
