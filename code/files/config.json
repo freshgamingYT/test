@@ -4,7 +4,12 @@
     "POSITIONS_FILE": "../files/positions.json",
     "BUTTONS_FILE": "../files/buttons.json",
     "GPIO_PINS": {
-        "stepper_pin": 18,
-        "other_pin": 23
+        "step_pin": 17,
+        "direction_pin": 27,
+        "enable_pin": 23,
+        "us_delay": 950,
+        "velocity_slow": 0.0001,
+        "velocity_medium": 0.00001,
+        "velocity_fast": 0.000001
     }
 }
