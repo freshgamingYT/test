@@ -1,0 +1,10 @@
+{
+    "buttons": [
+        {"name": "Getränk 1", "route": "/cocktail/1"},
+        {"name": "Getränk 2", "route": "/cocktail/2"},
+        {"name": "Getränk 3", "route": "/cocktail/3"},
+        {"name": "Getränk 4", "route": "/cocktail/4"},
+        {"name": "Getränk 5", "route": "/cocktail/5"},
+        {"name": "Getränk 6", "route": "/cocktail/6"}
+    ]
+}
