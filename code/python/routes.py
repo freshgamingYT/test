@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify
-from stepper.positions import PositionManager
+from .stepper.positions import PositionManager
 
 cocktail_route = Blueprint('cocktail_route', __name__)
 main_route = Blueprint('main_route', __name__)
 
-position_manager = PositionManager('../html/positions.json')
+position_manager = PositionManager('../files/positions.json')
 
 @cocktail_route.route('/1', methods=['GET'])
 def cocktail():
