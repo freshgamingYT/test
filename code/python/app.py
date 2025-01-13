@@ -15,7 +15,7 @@ class App:
         self.config_file = config_file
         self.logger = setup_logger()
         
-        self.app = Flask(__name__, template_folder='../html/templates')
+        self.app = Flask(__name__, template_folder='../html/templates', static_folder="../pictures")
         self.load_config()
         self.socketio = SocketIO(self.app)
 
