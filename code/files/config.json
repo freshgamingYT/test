@@ -1,5 +1,6 @@
 {
     "SECRET_KEY": "Keins123!",
     "LOG_DIR": "../python/logger/logs",
-    "POSITIONS_FILE": "../html/positions.json"
+    "POSITIONS_FILE": "../files/positions.json",
+    "BUTTONS_FILE": "../files/buttons.json"
 }
