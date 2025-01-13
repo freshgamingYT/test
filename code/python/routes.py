@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, send_from_directory
-from .stepper.positions import PositionManager
+from stepper.positions import PositionManager
 import logging
 import os
 
