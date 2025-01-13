@@ -35,4 +35,5 @@ def pictures(filename):
 
 def register_routes(app):
     app.register_blueprint(cocktail_route, url_prefix="/cocktail")
-    app
+    app.register_blueprint(main_route)
+    logger.debug('Routes registered successfully')
