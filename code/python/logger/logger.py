@@ -1,4 +1,6 @@
 import logging
+import os
+from logging.handlers import RotatingFileHandler
 
 class ColoredFormatter(logging.Formatter):
     COLORS = {
@@ -17,8 +19,13 @@ def setup_logger():
     logger = logging.getLogger('my_logger')
     logger.setLevel(logging.DEBUG)
 
-    # Create file handler
-    fh = logging.FileHandler('/code/python/logger/logs.txt')
+    # Ensure the logs directory exists
+    log_dir = os.path.join(os.path.dirname(__file__), 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+
+    # Create rotating file handler
+    log_file = os.path.join(log_dir, 'logfile.log')
+    fh = RotatingFileHandler(log_file, maxBytes=0, backupCount=5)
     fh.setLevel(logging.DEBUG)
 
     # Create console handler
