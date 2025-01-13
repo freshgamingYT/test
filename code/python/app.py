@@ -34,6 +34,11 @@ class App:
     
     def cleanup(self):
         GPIO.cleanup()
+        self.logger.debug('GPIO cleanup complete')
+        self.logger.debug('-' * 40)
+        self.logger.debug('-' * 40)
+        self.logger.debug('-' * 40)
+        self.logger.debug('-' * 40)
         self.stop_event.set()
 
     def signal_handler(self, sig, frame):
