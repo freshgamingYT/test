@@ -7,8 +7,8 @@ import sys
 import json
 import os
 
-from python.logger.logger import setup_logger
-from python.routes import register_routes
+from logger.logger import setup_logger
+from routes import register_routes
 
 class App:
     def __init__(self, config_file: str):
