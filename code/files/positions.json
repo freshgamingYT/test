@@ -1,8 +1,10 @@
 {
-    "pos0": 0,
-    "pos1": 50,
-    "pos2": 100,
-    "pos3": 150,
-    "pos4": 200,
-    "pos5": 250
+    "positions": [
+        {"name": "pos1", "value": 0, "description": "vodka"},
+        {"name": "pos2", "value": 50, "description": "rum"},
+        {"name": "pos3", "value": 100, "description": "gin"},
+        {"name": "pos4", "value": 150, "description": "tequila"},
+        {"name": "pos5", "value": 200, "description": "whiskey"},
+        {"name": "pos6", "value": 250, "description": "brandy"}
+    ]
 }

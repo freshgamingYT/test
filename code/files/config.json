@@ -2,5 +2,14 @@
     "SECRET_KEY": "Keins123!",
     "LOG_DIR": "../python/logger/logs",
     "POSITIONS_FILE": "../files/positions.json",
-    "BUTTONS_FILE": "../files/buttons.json"
+    "BUTTONS_FILE": "../files/buttons.json",
+    "GPIO_PINS": {
+        "step_pin": 17,
+        "direction_pin": 27,
+        "enable_pin": 23,
+        "us_delay": 950,
+        "velocity_slow": 0.0001,
+        "velocity_medium": 0.00001,
+        "velocity_fast": 0.000001
+    }
 }
