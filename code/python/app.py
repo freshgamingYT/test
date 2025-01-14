@@ -12,15 +12,34 @@ from routes import register_routes
 
 class App:
     def __init__(self, config_file: str):
-        self.config_file = config_file
         self.logger = setup_logger()
+
+        self.config_file = config_file
         
-        self.app = Flask(__name__, template_folder='../html/templates', static_folder="../html/static")
-        self.load_config()
-        self.socketio = SocketIO(self.app)
+        try:
+            self.app = Flask(__name__, template_folder='../html/templates', static_folder="../html/static")
+            self.logger.debug('initialized Flask app')
+        except Exception as e:
+            self.logger.error(e)
 
-        signal.signal(signal.SIGINT, self.signal_handler)
+        try:
+            self.load_config()
+            self.logger.debug('loaded config')
+        except Exception as e:
+            self.logger.error(e)
+        
+        try:
+            self.socketio = SocketIO(self.app)
+            self.logger.debug('initialized SocketIO')
+        except Exception as e:
+            self.logger.error('failed to initialized SocketIO {e}')
 
+        try:
+            signal.signal(signal.SIGINT, self.signal_handler)
+            self.logger.debug('setup signalhandler')
+        except Exception as e:
+            self.logger.error('failed to setup signalhandler: {e}')
+        
         self.stop_event = threading.Event()
 
     def load_config(self):
@@ -29,7 +48,11 @@ class App:
             self.app.config.update(config)
 
     def create_app(self):
-        register_routes(self.app)
+        try:
+            register_routes(self.app)
+            self.logger.debug('registered routes to flask app')
+        except Exception as e:
+            self.logger.error('failed to register routes to flask app: {e}')
         return self.app
     
     def cleanup(self):
