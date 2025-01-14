@@ -3,13 +3,16 @@
     "LOG_DIR": "../python/logger/logs",
     "POSITIONS_FILE": "../files/positions.json",
     "BUTTONS_FILE": "../files/buttons.json",
+    "us_delay": 950,
+    "velocity_slow": 0.0001,
+    "velocity_medium": 0.00001,
+    "velocity_fast": 0.000001,
+
     "GPIO_PINS": {
         "step_pin": 17,
         "direction_pin": 27,
         "enable_pin": 23,
-        "us_delay": 950,
-        "velocity_slow": 0.0001,
-        "velocity_medium": 0.00001,
-        "velocity_fast": 0.000001
+        "left_button_pin": 36,
+        "right_button_pin": 37
     }
 }
