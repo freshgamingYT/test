@@ -59,8 +59,6 @@ class StetterInit:
             GPIO.output(self.STEP, GPIO.LOW)
             time.sleep(self.uS * self.us_delay)
 
-            self.logger.info("moved Motor 1 Step")
-
             if direction == GPIO.HIGH:
                 self.aktuellePos += 1
             else:
@@ -150,7 +148,7 @@ class StetterInit:
         """Moves the motor to the specified position."""
         relative_steps = target_steps - self.aktuellePos
         self.moveRelPos(relative_steps, self.aktuellePos)  # Pass aktuellePos to moveRelPos
-        self.aktuellePos = target_steps
+        self.aktuellePos = target_steps 
 
     def moveRelPos(self, relative_steps, aktuellePos):
         """Moves the motor by the specified relative number of steps."""
@@ -173,20 +171,8 @@ class StetterInit:
                 print("Limit switch triggered! Stopping motor.")
                 break
 
+        # Ensure aktuellePos is updated with the actual final position
         self.aktuellePos = aktuellePos 
-
-    def load_available_cocktails(self):
-        try:
-            with open(self.available_cocktails_file, 'r') as f:
-                self.available_cocktails = json.load(f)
-        except FileNotFoundError:
-            print(f"Warning: {self.available_cocktails_file} not found. Creating default file.")
-            self.available_cocktails = []
-            self.save_available_cocktails()
-
-    def save_available_cocktails(self):
-        with open(self.available_cocktails_file, 'w') as f:
-            json.dump(self.available_cocktails, f, indent=4)
 
 if __name__ == "__main__":
     try:
