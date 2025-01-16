@@ -49,13 +49,13 @@ class StetterInit:
         self.logger.info("Setup GPIO")
 
     def load_available_cocktails(self):
-    try:
-        with open(self.available_cocktails_file, 'r') as f:
-            self.available_cocktails = json.load(f)
-    except FileNotFoundError:
-        print(f"Warning: {self.available_cocktails_file} not found. Creating default file.")
-        self.available_cocktails = []
-        self.save_available_cocktails()
+        try:
+            with open(self.available_cocktails_file, 'r') as f:
+                self.available_cocktails = json.load(f)
+        except FileNotFoundError:
+            print(f"Warning: {self.available_cocktails_file} not found. Creating default file.")
+            self.available_cocktails = []
+            self.save_available_cocktails()
 
     def initMoveMotor(self, direction, stop_condition):  # stop_condition is reference to getSchalterStatus
         """Move the motor in the specified direction until the stop condition is met."""
