@@ -99,9 +99,10 @@ class StetterInit:
                 time.sleep(1)
 
         # Print available positions
-        print("Available Positions:")
-        for position_name, steps in self.positions.items():
-            print(f"- {position_name}: {steps} steps")
+        print("Available Cocktails:")
+        for cocktail in self.positions:
+            if cocktail != "Null" and cocktail != "Endpoint": 
+                print(f"- {cocktail}") 
 
         while 1:
             try:
@@ -126,10 +127,11 @@ class StetterInit:
                 break 
 
     def execute_sequence(self, sequence):
-        for position_name in sequence:
+        for position_name, wait_time in sequence.items():
             if position_name in self.positions:
                 target_steps = self.positions[position_name]
                 self.move_to_position(target_steps)
+                time.sleep(wait_time) 
             else:
                 print(f"Invalid position in sequence: {position_name}")
 
