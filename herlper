@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import json
 
 from logger import setup_logger
 from fileHandler import FileHandler
@@ -18,13 +19,13 @@ class StetterInit:
 
     # Timing and delay
     us_delay = 950
-    uS = 0.00001       # 0.00001 normal
+    uS = 0.000001  # 0.00001 normal
 
     def __init__(self):
         self.logger = setup_logger()
         self.logger.debug("logger initialized")
         self.GPIOConfig()
-        self.positionsFileHandler = FileHandler('../json/positions.json')
+        self.positionsFileHandler = FileHandler('./json/positions.json')
         self.positions = self.positionsFileHandler.readJson()
 
     def GPIOConfig(self):
@@ -43,7 +44,7 @@ class StetterInit:
         self.logger.info("Setup GPIO")
 
 
-    def initMoveMotor(self, direction, stop_condition): # stop_condition is reference to getSchalterStatus
+    def initMoveMotor(self, direction, stop_condition):  # stop_condition is reference to getSchalterStatus
         """Move the motor in the specified direction until the stop condition is met."""
         self.logger.debug("In initMoveMotor")
 
@@ -55,11 +56,14 @@ class StetterInit:
             time.sleep(self.uS * self.us_delay)
 
             self.logger.info("moved Motor 1 Step")
-            
+
             if direction == GPIO.HIGH:
                 self.aktuellePos += 1
-                self.logger.info(f"new aktuellePos is {self.aktuellePos}")
-        
+            else:
+                self.aktuellePos -= 1
+
+            self.logger.info(f"new aktuellePos is {self.aktuellePos}")
+
     def getSchalterRechtsStatus(self) -> bool:
         """Check the status of the right limit switch."""
         self.logger.info(f"status of right button {GPIO.input(self.schalterRechtsPin)}")
@@ -80,7 +84,7 @@ class StetterInit:
 
         self.logger.info("Step 2: Moving right...")
         self.initMoveMotor(GPIO.HIGH, self.getSchalterRechtsStatus)  # Move right until right button is pressed
-        self.maxPos = self.aktuellePos
+        self.maxPos = self.aktuellePos 
         self.logger.info(f"Right limit switch reached!, maxPos: {self.maxPos}, aktuellePos: {self.aktuellePos}")
         time.sleep(1)
 
@@ -90,57 +94,7 @@ class StetterInit:
         self.logger.info(f"Left limit switch reached again!, aktuellePos: {self.aktuellePos}")
         time.sleep(1)
 
-        self.moveToDefPos()
-        # self.logger.debug("Sequence complete. Stopping motor.")
-    
-    # return the console input
-    def setNewRelPos(self) -> int:
-        self.consoleInput = int(input("Gebe Anzahl an Steps fÃ¼r den Motor nach folgendem Schema an: Richtung: +/-, AnzSteps als int: "))
-        self.logger.info(f"console input is: {self.consoleInput}")
-        return self.consoleInput
-
-    # checks if newPos is lower than aktpos 
-    #   -> GPIO.LOW(nach links) and moves servo to the left 
-    # or higher than aktPos 
-    #   -> GPIO.HIGH(nach rechts) and moves servo to the right 
-    # or if entry was 0
-
-    def moveRelPos(self, newRelPos, aktuellePos):
-        self.logger.debug("entering moveRelPos")
-
-        if newRelPos == 0:
-            print("Die Eingabe is 0, es wird nichts passieren")
-            self.logger.info("Die Eingabe is 0, es wird nichts passieren")
-        if newRelPos < 0:
-            self.logger.info("newRelPos is positive")
-            GPIO.output(self.DIR, GPIO.LOW)
-            self.aktPos = aktuellePos
-            while self.aktPos > newRelPos or self.aktPos == self.nullPos:
-                GPIO.output(self.STEP, GPIO.HIGH)
-                time.sleep(self.uS * self.us_delay)
-                GPIO.output(self.STEP, GPIO.LOW)
-                time.sleep(self.uS * self.us_delay)
-                self.aktPos -= 1
-                
-                print(f"moved to position: {newRelPos}")
-                self.logger.info(f"moved to position: {newRelPos}")
-
-
-        elif newRelPos > 0:
-            self.logger.info("newRelPos is negative")
-            GPIO.output(self.DIR, GPIO.HIGH)
-            self.aktPos = 0
-            while self.aktPos < newRelPos or newRelPos + self.aktPos == self.maxPos:
-                GPIO.output(self.STEP, GPIO.HIGH)
-                time.sleep(self.uS * self.us_delay)
-                GPIO.output(self.STEP, GPIO.LOW)
-                time.sleep(self.uS * self.us_delay)
-                self.aktPos += 1
-                
-                print(f"moved to position: {newRelPos}")
-                self.logger.info(f"moved to position: {newRelPos}")
-
-    def moveToDefPos(self):
+        # Print available positions
         print("Available Positions:")
         for position_name, steps in self.positions.items():
             print(f"- {position_name}: {steps} steps")
@@ -161,15 +115,38 @@ class StetterInit:
                 print("Exiting program...")
                 break
 
-            if self.getSchalterLinksStatus() or self.getSchalterRechtsStatus():
+            if (self.aktuellePos < 0) or (self.aktuellePos > self.maxPos):
                 print("Limit switch triggered! Stopping motor.")
-                break
+                break 
 
     def move_to_position(self, target_steps):
         """Moves the motor to the specified position."""
         relative_steps = target_steps - self.aktuellePos
-        self.move_rel_pos(relative_steps)
+        self.moveRelPos(relative_steps, self.aktuellePos)  # Pass aktuellePos to moveRelPos
         self.aktuellePos = target_steps
+
+    def moveRelPos(self, relative_steps, aktuellePos):
+        """Moves the motor by the specified relative number of steps."""
+        direction = GPIO.HIGH if relative_steps > 0 else GPIO.LOW
+        absolute_steps = abs(relative_steps)
+
+        GPIO.output(self.DIR, direction)
+        for _ in range(absolute_steps):
+            GPIO.output(self.STEP, GPIO.HIGH)
+            time.sleep(self.uS * self.us_delay)
+            GPIO.output(self.STEP, GPIO.LOW)
+            time.sleep(self.uS * self.us_delay)
+
+            if direction == GPIO.HIGH:
+                aktuellePos += 1
+            else:
+                aktuellePos -= 1
+
+            if (aktuellePos < 0) or (aktuellePos > self.maxPos):
+                print("Limit switch triggered! Stopping motor.")
+                break
+
+        self.aktuellePos = aktuellePos 
 
 if __name__ == "__main__":
     try:
@@ -179,4 +156,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Exiting program...")
     finally:
-        GPIO.cleanup()  # Cleanup GPIO settings on exit
+        GPIO.cleanup()
