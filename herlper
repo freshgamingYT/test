@@ -83,6 +83,7 @@ class StetterInit:
                 self.logger.info("Step 1: Moving left...")
                 self.initMoveMotor(GPIO.LOW, self.getSchalterLinksStatus)  # Move left until left button is pressed
                 self.nullPos = 0
+                self.aktuellePos = 0
                 self.logger.info(f"Left limit switch reached!, nullPos: {self.nullPos} ")
                 time.sleep(1)
             elif step == "right":
