@@ -135,12 +135,12 @@ class StetterInit:
     def execute_sequence(self, sequence):
         for position_name, wait_time in sequence.items():
             if position_name in self.positions:
-                target_steps = self.positions[position_name]
+                target_steps = self.positions[position_name]  # Lookup the position in positions.json
                 self.move_to_position(target_steps)
-                time.sleep(wait_time) 
+                time.sleep(wait_time)  # Wait for the specified time
             else:
                 print(f"Invalid position in sequence: {position_name}")
-
+    
             if position_name == "finished":
                 print("Sequence completed. Waiting for 10 seconds...")
                 time.sleep(10) 
@@ -149,7 +149,7 @@ class StetterInit:
                 print("Available Cocktails:")
                 for cocktail in self.available_cocktails:
                     print(f"- {cocktail}") 
-                break 
+                break
 
     def move_to_position(self, target_steps):
         """Moves the motor to the specified position."""
