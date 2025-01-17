@@ -187,4 +187,11 @@ class StetterInit:
 
     def save_available_cocktails(self):
         with open(self.available_cocktails_file, 'w') as f:
-            json.dump(self.available_cocktails, f, indent=4
+            json.dump(self.available_cocktails, f, indent=4)
+
+if __name__ == "__main__":
+    try:
+        stepper = StetterInit()
+        stepper.init()
+    except Exception as e:
+        print(e)
