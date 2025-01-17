@@ -98,6 +98,9 @@ class StetterInit:
                 self.logger.info(f"Left limit switch reached again!, aktuellePos: {self.aktuellePos}")
                 time.sleep(1)
 
+        # Calculate maxPos as the sum of absolute values of nullPos and maxPos
+        self.maxPos = abs(self.nullPos) + abs(self.maxPos) 
+
         # Print available positions
         print("Available Cocktails:")
         for cocktail in self.available_cocktails:
@@ -110,7 +113,7 @@ class StetterInit:
                     break
 
                 if user_input in self.available_cocktails: 
-                    sequence_file = f"./json/{user_input}_sequence.json"
+                    sequence_file = f"./json/sequences/{user_input}_sequence.json"  # Corrected file path
                     if os.path.exists(sequence_file):
                         sequence_file_handler = FileHandler(sequence_file)
                         sequence = sequence_file_handler.readJson()
