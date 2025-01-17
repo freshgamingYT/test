@@ -19,6 +19,11 @@ body {
     box-shadow: 0 0 50px  #005380;
 }
 
+.box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 50px #005380;
+}
+
 .headerbox {
     padding-top: 50px;
     height: 100px;
@@ -60,8 +65,8 @@ body {
 
 .svalogo {
     display: flex;
+    position: absolute;
     height: 70px;
-    position: fixed;
     display: inline-block;
     margin-top: -10px;
     margin-left: 38px;
@@ -75,6 +80,7 @@ body {
     font-family: sans-serif;
     text-shadow: -2px 2px 6px #0081C6;
     letter-spacing: 1px;
+    text-decoration: none;
 }
 
 .infobutton {
@@ -118,4 +124,83 @@ body {
     width: auto;
     display: inline-block;
     position: fixed;
+}
+
+.dots {
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+}
+
+.dots::after {
+    content: '';
+    display: inline-block;
+    animation: dots 2s steps(3, end) infinite;
+}
+
+@keyframes dots {
+    0% { content: ''; }
+    33% { content: '.'; }
+    66% { content: '..'; }
+    100% { content: '...'; }
+}
+
+.progress-container {
+    width: 80%;
+    height: 15px;
+    background-color: #f3f3f3;
+    border: 3px solid #005380;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 300px;
+    margin: 400px auto;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0;
+    background-color: #0081C6;
+    transition: width 0.8s ease-in-out;
+}
+
+.markers {
+    position: relative;
+    width: 80%;
+    margin-top: -485px; /* Positioniert die Markierungen unterhalb der Progressbar */
+    height: 40px; /* Höhe für die Marker */
+}
+
+.marker {
+    position: absolute;
+    font-family: sans-serif;
+    bottom: 0;
+    transform: translateX(-50%);
+    text-align: center;
+    color: white;
+    font-size: 28px;
+    text-shadow: 1px 1px 2px #005380;
+}
+
+.marker .line {
+    display: block;
+    width: 2px;
+    height: 40px; /* Größere Linie */
+    background-color: white;
+    margin: 5px auto 0;
+    box-shadow: 1px 1px 2px #005380;
+}
+
+.buttons button {
+    margin: 100px;
+    padding: 10px 20px;
+    background-color: #0081C6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buttons button:hover {
+    background-color: #005380;
 }
