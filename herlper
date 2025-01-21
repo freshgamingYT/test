@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+from Adafruit_PCA9685 import PCA9685
 import time
 import json
 import os
@@ -7,6 +8,15 @@ from logger import setup_logger
 from fileHandler import FileHandler
 
 class StetterInit:
+    
+    # Initialize the PCA9685
+    pwm = PCA9685(busnum=1)  # Use bus 1 (check your I2C bus if unsure)
+    pwm.set_pwm_freq(60)  # Set frequency to 60 Hz
+
+    # Define pulse width ranges (adjust as needed for your servos)
+    pulse_min = 150  # Min pulse length out of 4096
+    pulse_max = 600  # Max pulse length out of 4096
+    
     nullPos = 0
     maxPos = 0
     aktuellePos = 0
@@ -137,7 +147,10 @@ class StetterInit:
             if position_name in self.positions:
                 target_steps = self.positions[position_name]  # Lookup the position in positions.json
                 self.move_to_position(target_steps)
+                set_servo_pulse(0, 2000)  # 2000 microseconds (adjust as needed)
                 time.sleep(wait_time)  # Wait for the specified time
+                set_servo_pulse(0, 1000)  # 1000 microseconds (adjust as needed)
+
             else:
                 print(f"Invalid position in sequence: {position_name}")
     
@@ -145,6 +158,7 @@ class StetterInit:
                 print("Sequence completed. Waiting for 10 seconds...")
                 time.sleep(10) 
                 self.move_to_position(self.nullPos) 
+                pwm.set_all_pwm(0, 0)  # Stop all servos
                 print("Returned to Null position.")
                 print("Available Cocktails:")
                 for cocktail in self.available_cocktails:
@@ -192,6 +206,14 @@ class StetterInit:
     def save_available_cocktails(self):
         with open(self.available_cocktails_file, 'w') as f:
             json.dump(self.available_cocktails, f, indent=4)
+            
+    # Function to set servo position
+    def set_servo_pulse(self, channel, pulse):
+        self.pulse_length = int((pulse * 4096 / 20000)*-1)  # Convert pulse width to 16-bit value
+        self.pwm.set
+    def set_servo_pulse(self, channel, pulse):
+        self.pulse_length = int((pulse * 4096 / 20000) * -1)  # Convert pulse width to 16-bit value
+        self.pwm.set_pwm(channel, 0, self.pulse_length)
 
 if __name__ == "__main__":
     try:
