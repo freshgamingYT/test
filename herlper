@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-from Adafruit_PCA9685 import PCA9685
+# from Adafruit_PCA9685 import PCA9685
 import time
 import json
 import os
@@ -10,12 +10,12 @@ from fileHandler import FileHandler
 class StetterInit:
     
     # Initialize the PCA9685
-    pwm = PCA9685(busnum=1)  # Use bus 1 (check your I2C bus if unsure)
-    pwm.set_pwm_freq(60)  # Set frequency to 60 Hz
+    #pwm = PCA9685(busnum=1)  # Use bus 1 (check your I2C bus if unsure)
+    #pwm.set_pwm_freq(60)  # Set frequency to 60 Hz
 
     # Define pulse width ranges (adjust as needed for your servos)
-    pulse_min = 150  # Min pulse length out of 4096
-    pulse_max = 600  # Max pulse length out of 4096
+    #pulse_min = 150  # Min pulse length out of 4096
+    #pulse_max = 600  # Max pulse length out of 4096
     
     nullPos = 0
     maxPos = 0
@@ -30,7 +30,9 @@ class StetterInit:
 
     # Timing and delay
     us_delay = 950
-    uS = 0.000001  # 0.00001 normal
+    uS = 0.000005  # 0.00001 normal
+    
+    temp_disable_limit_switch_check = False
 
     def __init__(self):
         self.logger = setup_logger()
@@ -63,34 +65,45 @@ class StetterInit:
         self.logger.debug("In initMoveMotor")
 
         GPIO.output(self.DIR, direction)
+        # print(direction)
+        # print(f"Direction set to {'HIGH' if direction == GPIO.HIGH else 'LOW'}")
+        # print(f"Current state of DIR pin: {GPIO.input(self.DIR)}")
         while not stop_condition():
             GPIO.output(self.STEP, GPIO.HIGH)
+            print(f"STEP pin set to HIGH, current state: {GPIO.input(self.STEP)}")
             time.sleep(self.uS * self.us_delay)
+            
             GPIO.output(self.STEP, GPIO.LOW)
+            print(f"STEP pin set to LOW, current state: {GPIO.input(self.STEP)}")
             time.sleep(self.uS * self.us_delay)
-
             if direction == GPIO.HIGH:
                 self.aktuellePos += 1
             else:
                 self.aktuellePos -= 1
 
-            #self.logger.info(f"new aktuellePos is {self.aktuellePos}")
+            # self.logger.info(f"new aktuellePos is {self.aktuellePos}")
 
     def getSchalterRechtsStatus(self) -> bool:
         """Check the status of the right limit switch."""
         #self.logger.info(f"status of right button {GPIO.input(self.schalterRechtsPin)}")
+        if self.temp_disable_limit_switch_check:
+            return False
         return GPIO.input(self.schalterRechtsPin) == 1
 
     def getSchalterLinksStatus(self) -> bool:
         """Check the status of the left limit switch."""
         #self.logger.info(f"status of right button {GPIO.input(self.schalterLinksPin)}")
+        if self.temp_disable_limit_switch_check:
+            return False
         return GPIO.input(self.schalterLinksPin) == 1
 
     def init(self):
         """Execute the initialization sequence from stepper_init.json."""
         for step in self.initSequence:
+            '''
             if step == "left":
                 #self.logger.info("Step 1: Moving left...")
+                print(GPIO.LOW)
                 self.initMoveMotor(GPIO.LOW, self.getSchalterLinksStatus)  # Move left until left button is pressed
                 self.nullPos = 0
                 self.aktuellePos = 0
@@ -102,15 +115,27 @@ class StetterInit:
                 self.maxPos = self.aktuellePos 
                 self.logger.info(f"Right limit switch reached!, maxPos: {self.maxPos}, aktuellePos: {self.aktuellePos}")
                 time.sleep(1)
+            
             elif step == "left_again":
+            '''
+            if step == "left":
                 #self.logger.info("Step 3: Moving left again...")
                 self.initMoveMotor(GPIO.LOW, self.getSchalterLinksStatus)  # Move left until left button is pressed
                 self.aktuellePos = 0
                 self.logger.info(f"Left limit switch reached again!, aktuellePos: {self.aktuellePos}")
                 time.sleep(1)
 
-        # Calculate maxPos as the sum of absolute values of nullPos and maxPos
+       	# Calculate maxPos as the sum of absolute values of nullPos and maxPos
         self.maxPos = abs(self.nullPos) + abs(self.maxPos) 
+        
+        # Temporarily disable limit switch checks after initialization
+        self.temp_disable_limit_switch_check = True
+
+		# Move the stepper motor away from the limit switch
+        self.moveRelPos(10, self.aktuellePos)  # Adjust the number of steps as needed
+
+		# Re-enable limit switch checks after moving away from the limit switch
+        self.temp_disable_limit_switch_check = False
 
         # Print available positions
         print("Available Cocktails:")
@@ -147,33 +172,18 @@ class StetterInit:
             if position_name in self.positions:
                 target_steps = self.positions[position_name]  # Lookup the position in positions.json
                 self.move_to_position(target_steps)
+                '''
+                # Move servo 90 degrees to the right
+                print("Moving servo 90 degrees to the right...")
+                right_pulse_width = int((self.pulse_max - self.pulse_min) * 3 // 4 + self.pulse_min)  # Adjust for 90 degrees
+                self.set_servo_pulse(0, right_pulse_width)  # Assuming channel 0 for servo
+                time.sleep(10)  # Wait for 10 seconds
                 
-                # Move servo to the left by setting pulse width to half speed (90 degrees to the left)
-                half_speed_pulse_width_left = int((self.pulse_max - self.pulse_min) / 2 + self.pulse_min)
-                half_speed_pulse_width_right = int((self.pulse_max - self.pulse_min) / 4 + self.pulse_min)
-
-                time.sleep(1)
-                
-                # Move servo to the left at half speed (90 degrees to the left)
-                print("Moving servo to the left at half speed...")
-                for i in range(half_speed_pulse_width_left):
-                    self.set_servo_pulse(0, i)
-                    time.sleep(0.02) 
-
-                time.sleep(10) 
-
-                print("Returning servo to original position...")
-                
-                for i in range(half_speed_pulse_width_left, half_speed_pulse_width_right, -1):
-                    self.set_servo_pulse(0, i)
-                    time.sleep(0.02)
-
-                time.sleep(1)
-                self.set_servo_pulse(0, 1000)  # 1000 microseconds (adjust as needed)
-                time.sleep(wait_time + 2)  # Wait for the specified time
-                self.set_servo_pulse(0, 1000)  # 1000 microseconds (adjust as needed)
-                time.sleep(1)
-
+                # Move servo back 90 degrees to the left
+                print("Moving servo back to original position...")
+                self.set_servo_pulse(0, 1000)  # Center pulse width (adjust as needed)
+                time.sleep(2)  # Wait for servo movement
+				'''
             else:
                 print(f"Invalid position in sequence: {position_name}")
     
@@ -181,7 +191,7 @@ class StetterInit:
                 print("Sequence completed. Waiting for 10 seconds...")
                 time.sleep(10) 
                 self.move_to_position(self.nullPos) 
-                self.pwm.set_all_pwm(0, 1000)  # Stop all servos
+                #self.pwm.set_all_pwm(0, 1000)  # Stop all servos
                 time.sleep(1)
                 print("Returned to Null position.")
                 print("Available Cocktails:")
@@ -230,13 +240,13 @@ class StetterInit:
     def save_available_cocktails(self):
         with open(self.available_cocktails_file, 'w') as f:
             json.dump(self.available_cocktails, f, indent=4)
-            
+    '''    
     # Function to set servo position
     def set_servo_pulse(self, channel, pulse):
         self.pulse_length = int(pulse * 4096 / 20000)  # Convert pulse width to 16-bit value
         self.pwm.set_pwm(channel, 0, self.pulse_length)
         self.logger.debug("moved Servo")
-
+	'''
 
 if __name__ == "__main__":
     try:
