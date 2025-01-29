@@ -172,10 +172,10 @@ class StetterInit:
         for position_name, wait_time in sequence.items():
             if position_name in self.positions:
 		target_steps = self.positions[position_name]
-      	if target_steps != prev_target_pos:  # Check if target position has changed
-        	self.move_to_position(target_steps)
-      	prev_target_pos = target_steps  # Update prev_target_pos for next iteration
-      	time.sleep(1)
+      		if target_steps != prev_target_pos:  # Check if target position has changed
+        		self.move_to_position(target_steps)
+      		prev_target_pos = target_steps  # Update prev_target_pos for next iteration
+      		time.sleep(1)
                 
                 '''
                 # Move servo 90 degrees to the right
