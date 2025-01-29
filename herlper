@@ -122,6 +122,47 @@ class StetterInit:
 
         print(f"aktuellePos: {self.aktuellePos}, maxPos: {self.maxPos}")
 
+    def execute_sequence(self, sequence):
+        for position_name, wait_time in sequence.items():
+            print(position_name)
+            print(wait_time)
+            print(self.aktuellePos)
+    
+            if position_name in self.positions:
+                print(self.positions)
+                target_steps = self.positions[position_name]  # Lookup the position in positions.json
+                
+                # Move the motor only if needed
+                if target_steps != self.aktuellePos:
+                    self.move_to_position(target_steps)
+                
+                time.sleep(1)
+                
+                # Move the servo regardless of motor movement
+                print("Moving servo to active position...")
+                self.pwm.set_pwm(0, 0, self.active_pos)
+                time.sleep(5)  # Wait for 5 seconds
+    
+                # Move servo back
+                print("Returning servo to inactive position...")
+                self.pwm.set_pwm(0, 0, self.inactive_pos)
+                time.sleep(1)  # Wait for servo movement
+    
+            else:
+                print(f"Invalid position in sequence: {position_name}")
+    
+            if position_name == "finished":
+                print("Sequence completed. Returning to home position...")
+                time.sleep(10)
+                self.move_to_position(self.nullPos)
+                self.pwm.set_pwm(0, 0, self.inactive_pos)
+                time.sleep(1)
+                print("Returned to Null position.")
+                print("Available Cocktails:")
+                for cocktail in self.available_cocktails:
+                    print(f"- {cocktail}")
+                break
+
     def load_available_cocktails(self):
         try:
             with open(self.available_cocktails_file, 'r') as f:
